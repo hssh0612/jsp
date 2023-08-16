@@ -99,8 +99,277 @@
     where e.manager = m.eno
     order by e.eno;
  
+    select e.eno, e.ename, m.eno, m.ename
+from employee e inner join employee m
+on e.manager = m.eno
+order by e.eno;
+
+/*
+4. 아우터 조인(Outer Join), 외부 조인
+ - 이너 조인은 양쪽 컬럼의 값 중의 하나가 null이면 결과를 출력하지 않지만,
+ - 아우터 조인은 컬럼의 값이 null일 때도 값을 출력하도록 함.
+  4-1. 레프트 아우터 조인(left outer join), 왼쪽 외부 조인
+   - 왼쪽 컬럼이 기준, 왼쪽 컬럼에 대한 값이 null일 때 출력
+  
+  4-2. 라이트 아우터 조인(right outer join), 오른쪽 외부 조인
+   - 오른쪽 컬럼이 기준, 오른쪽 컬럼에 대한 값이 null일 때 출력
+  
+  4-3. 풀 아우터 조인(full outer join), 전체 외부 조인
+   - 왼쪽 컬럼에 대한 null값, 오른쪽 컬럼에 대한 null값을 모두 출력
+*/
+
+-- 문제5) 사원 테이블에서 사번, 사원명, 관리자번호, 관리자이름을 출력하시오.
+-- 컬럼의 값이 null일때도 값을 출력하도록 하시오.
+-- 직속 상관이 없을 때도 출력하라.
+    -- 1번 - 최근 방법
+    select e.eno, e.ename, m.eno, m.ename
+    from employee e left outer join employee m
+    on e.manager = m.eno
+    order by e.eno;
+
+    -- 2번 - 이전 방법
+    select e.eno, e.ename, m.eno, m.ename
+    from employee e join employee m
+    on e.manager = m.eno(+)
+    order by e.eno;
+
+-- 문제6) 사원 테이블에서 사번, 사원명, 관리자번호, 관리자이름을 출력하시오.
+-- 오른쪽 컬럼의 값이 null일때도 값을 출력하도록 하시오.
+--> 부하 직원이 없는 사원의 정보도 출력하라.
+    -- 1번 - 최근 방법
+    select e.eno, e.ename, m.eno, m.ename
+    from employee e right outer join employee m
+    on e.manager = m.eno
+    order by e.eno;
+    
+    -- 2번 - 이전 방법
+    select e.eno, e.ename, m.eno, m.ename
+    from employee e join employee m
+    on e.manager(+) = m.eno
+    order by e.eno;
+
+-- 문제7) 사원 테이블에서 사번, 사원명, 관리자번호, 관리자이름을 출력하시오.
+-- 왼쪽과 오른쪽 컬럼의 값이 null일때 모두 값을 출력하도록 하시오.
+ --> 관리자가 없는 사원의 정보와 부하 지원이 없는 사원의 정보도 출력하라.
  
+    -- 1번 - 권장
+    select e.eno, e.ename, m.eno, m.ename
+    from employee e full outer join employee m
+    on e.manager = m.eno
+    order by e.eno;
+    
+    -- 2번 - 권장하지않음
+    select e.eno, e.ename, m.eno, m.ename
+    from employee e join employee m
+    on e.manager = m.eno(+)
+    union
+    select e.eno, e.ename, m.eno, m.ename
+    from employee e join employee m
+    on e.manager(+) = m.eno;
+    
+    -- 3번 - 권장하지않음
+    select e.eno, e.ename, m.eno, m.ename
+    from employee e left outer join employee m
+    on e.manager = m.eno
+    union
+    select e.eno, e.ename, m.eno, m.ename
+    from employee e right outer join employee m
+    on e.manager = m.eno;
+    
+
+-- < 조인 확인 학습 >
+--1. SCOTT 사원의 사번, 사원명, 부서번호, 부서명을 출력
+-- - 알리아스를 사용하고, 4가지의 방법으로 문제 해결
+    -- 1-1.
+    select eno 사번, ename 사원명, e.dno 부서번호 , dname 부서명
+    from employee e, department d
+    where e.dno = d.dno
+    and ename = 'SCOTT';
+    
+    -- 1-2.
+    select eno 사번, ename 사원명, e.dno 부서번호 , dname 부서명
+    from employee natural join department
+    where ename = 'SCOTT';
+    
+    -- 1-3.
+    select eno 사번, ename 사원명, e.dno 부서번호 , dname 부서명
+    from employee join department
+    using(dno)
+    where ename = 'SCOTT';
+    
+    -- 1-4.
+     select eno 사번, ename 사원명, e.dno 부서번호 , dname 부서명
+    from employee e join department d
+    on e.dno = d.dno
+    where ename = 'SCOTT';
+    
+--2. 모든 사원의 사원번호, 사원명, 부서이름, 지역명을 출력
+-- - 알리아스를 사용하고, 부서이름을 기준으로 오름차순, 부서이름이 같은 때는 사번을 기준으로 내림차순.
+-- - 4가지의 방법으로 문제를 해결.
+    -- 2-1.
+    select eno 사번, ename 사원명, dname 부서명, loc 지역명
+    from employee e, department d
+    where e.dno = d.dno
+    order by dname asc, eno desc;
+    
+    -- 2-2.
+    select eno 사번, ename 사원명, dname 부서명, loc 지역명
+    from employee natural join department
+    order by dname asc, eno desc;
+    
+    -- 2-3.
+    select eno 사번, ename 사원명, dname 부서명, loc 지역명
+    from employee join department
+    using(dno)
+    order by dname asc, eno desc;
+    
+    -- 2-4.
+    select eno 사번, ename 사원명, dname 부서명, loc 지역명
+    from employee e join department d
+    on e.dno = d.dno
+    order by dname asc, eno desc;
+    
+--3. 10번 부서에 속하는 사원의 부서번호, 사번, 사원명, 업무, 지역명을 출력
+-- - 알리아스를 사용하고, 4가지 방법으로 문제 해결.
+    -- 3-1.
+    select e.dno 부서번호, eno 사번, ename 사원명, e.job 업무, loc 지역명
+    from employee e, department d
+    where e.dno = d.dno
+    and e.dno = 10;
+    
+    -- 3-2.
+    select dno 부서번호, eno 사번, ename 사원명, job 업무, loc 지역명
+    from employee natural join department d
+    where dno = 10;
+    
+    -- 3-3.
+    select dno 부서번호, eno 사번, ename 사원명, job 업무, loc 지역명
+    from employee join department
+    using(dno)
+    where dno = 10;
+    
+    -- 3-4.
+    select e.dno 부서번호, eno 사번, ename 사원명, e.job 업무, loc 지역명
+    from employee e join department d
+    on e.dno = d.dno
+    where e.dno = 10;
+    
+--4. 커미션을 받을 수 있는 사원의 사원명, 부서명, 지역명을 출력
+-- - 알리아스 사용, 4가지 방법
+    -- 4-1.
+    select ename 사원명, dname 부서명, loc 지역명
+    from employee e, department d
+    where e.dno = d.dno
+    and commission is not null;
+    
+    -- 4-2.
+    select ename 사원명, dname 부서명, loc 지역명
+    from employee natural join department
+    where commission is not null;
+    
+    -- 4-3.
+    select ename 사원명, dname 부서명, loc 지역명
+    from employee join department
+    using(dno)
+    where commission is not null;
+    
+    -- 4-4.
+    select ename 사원명, dname 부서명, loc 지역명
+    from employee e join department d
+    on e.dno = d.dno
+    where commission is not null;
+    
+--5. 사원명에 A가 포함된 사원의 사번, 사원명, 부서번호, 부서명을 출력
+-- - 알리아스 사용 4가지 방법.
+    -- 5-1.
+    select eno 사번, ename 사원명, e.dno 부서번호, dname 부서명
+    from employee e, department d
+    where e.dno = d.dno
+    and ename like '%A%';
+    
+    -- 5-2.
+    select eno 사번, ename 사원명, dno 부서번호, dname 부서명
+    from employee natural join department
+    where ename like '%A%';
+    
+    -- 5-3.
+    select eno 사번, ename 사원명, dno 부서번호, dname 부서명
+    from employee join department
+    using(dno)
+    where ename like '%A%';
+    
+    -- 5-4.
+    select eno 사번, ename 사원명, e.dno 부서번호, dname 부서명
+    from employee e join department d
+    on e.dno = d.dno
+    where ename like '%A%';
+
+★★★★★
+-- < 조인 확인 학습 part.2 >
+ -- 6. NEW YORK에 근무하는 사원의 사원명, 업무, 부서번호, 부서명을 출력
+  -- 알리아스 사용, 4가지 방법
+    -- 6-1.
+    select ename 사원명, job 업무, e.dno 부서번호, dname 부서명
+    from employee e, department d
+    where e.dno = d.dno
+    and loc = 'NEW YORK';
+    
+    -- 6-2.
+    select ename 사원명, job 업무, dno 부서번호, dname 부서명
+    from employee natural join department
+    where loc = 'NEW YORK';
+    
+    -- 6-3.
+    select ename 사원명, job 업무, dno 부서번호, dname 부서명
+    from employee join department
+    using(dno)
+    where loc = 'NEW YORK';
+    
+    -- 6-4.
+    select ename 사원명, job 업무, e.dno 부서번호, dname 부서명
+    from employee e join department d
+    on e.dno = d.dno
+    where loc = 'NEW YORK';
+    
+ -- 7. SCOTT과 동일한 부서에서 근무하는 동료 사원의 부서번호, 동료사원명을 출력
+    -- 7-1.
+    select e.dno 부서번호, ename 동료사원명
+    from employee e, department d
+    where e.dno = d.dno
+    and d.dno = d.dno('SCOTT'); 
+    -- 7-2.
+    
+    -- 7-3.
+    
+    -- 7-4.
  
- 
- 
- 
+ -- 8. WARD 사원보다 늦게 입사한 사원의 사원명과 입사일을 출력
+  -- 입사일을 기준으로 오름차순 하여 출력
+  
+    -- 8-1.
+    
+    -- 8-2.
+    
+    -- 8-3.
+    
+    -- 8-4.
+  
+ -- 9. 관리자보다 먼저 입사한 사원의 사원명, 입사일, 관리자이름, 관리자입사일을 출력
+    
+    -- 9-1.
+    
+    -- 9-2.
+    
+    -- 9-3.
+    
+    -- 9-4.
+    
+ -- < 조인 확인 학습 Part.3 >
+ -- 교재 239 ~ 240 페이지의 4문제 해결
+  -- 1.
+  
+  -- 2.
+  
+  -- 3.
+  
+  -- 4.
