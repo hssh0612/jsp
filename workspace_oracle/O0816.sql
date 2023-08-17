@@ -332,44 +332,120 @@ order by e.eno;
     where loc = 'NEW YORK';
     
  -- 7. SCOTT과 동일한 부서에서 근무하는 동료 사원의 부서번호, 동료사원명을 출력
+ -- 셀프조인 -> 이퀴조인
     -- 7-1.
-    select e.dno 부서번호, ename 동료사원명
-    from employee e, department d
-    where e.dno = d.dno
-    and d.dno = d.dno('SCOTT'); 
+    select dno 부서번호, ename 동료사원명
+    from employee
+    where dno = (select dno from employee where ename = 'SCOTT');
+    
     -- 7-2.
+    select dno 부서번호, ename 동료사원명
+    from employee natural join department
+    where dno = (select dno from employee where ename = 'SCOTT');
     
     -- 7-3.
+    select dno 부서번호, ename 동료사원명
+    from employee join department
+    using(dno)
+    where dno = (select dno from employee where ename = 'SCOTT');
     
     -- 7-4.
+    select e.dno 부서번호, ename 동료사원명
+    from employee e join department d
+    on e.dno = d.dno
+    where e.dno = (select dno from employee where ename = 'SCOTT');
  
  -- 8. WARD 사원보다 늦게 입사한 사원의 사원명과 입사일을 출력
   -- 입사일을 기준으로 오름차순 하여 출력
-  
+   --> 셀프조인 , 넌이퀴 조인
+    -- * 강사님
+    select o.ename, o.hiredate
+    from employee w, employee o
+    where w.hiredate < o.hiredate
+    and w.ename = 'WARD'
+    order by o.hiredate;
+    
+    -- * 강사님 2
+    select o.ename, o.hiredate
+    from employee w join employee o
+    on w.hiredate < o.hiredate
+    and w.ename = 'WARD'
+    order by o.hiredate;
+    
     -- 8-1.
+    select ename 사원명, hiredate 입사일
+    from employee
+    where hiredate > (select hiredate from employee where ename = 'WARD')
+    order by hiredate asc;
     
     -- 8-2.
+    select ename 사원명, hiredate 입사일
+    from employee natural join department
+    where hiredate > (select hiredate from employee where ename = 'WARD')
+    order by hiredate asc;
     
     -- 8-3.
+    select ename 사원명, hiredate 입사일
+    from employee join department
+    using(dno)
+    where hiredate > (select hiredate from employee where ename = 'WARD')
+    order by hiredate asc;
     
     -- 8-4.
+    select ename 사원명, hiredate 입사일
+    from employee e join department d
+    on e.dno = d.dno
+    where hiredate > (select hiredate from employee where ename = 'WARD')
+    order by hiredate asc;
   
  -- 9. 관리자보다 먼저 입사한 사원의 사원명, 입사일, 관리자이름, 관리자입사일을 출력
+    -- * 강사님
+    select e.ename 사원명, e.hiredate 사원입사일, m.ename 관리자명, m.hiredate 관리자입사일
+    from employee e, employee m
+    where e.manager = m.eno
+    
     
     -- 9-1.
+    select e.eno 사원번호,e.ename 사원이름, e.hiredate 입사일, e.manager 관리자번호, m.ename 관리자이름, m.hiredate 관리자입사일
+    from employee e, employee m
+    where e.dno = m.dno
+    and e.manager = m.eno
+    and e.hiredate < m.hiredate;
     
     -- 9-2.
+    
     
     -- 9-3.
     
     -- 9-4.
+    select e.eno 사원번호,e.ename 사원이름, e.hiredate 입사일, e.manager 관리자번호, m.ename 관리자이름, m.hiredate 관리자입사일
+    from employee e join employee m
+    on e.dno = m.dno
+    where e.manager = m.eno
+    and e.hiredate < m.hiredate;
     
  -- < 조인 확인 학습 Part.3 >
  -- 교재 239 ~ 240 페이지의 4문제 해결
-  -- 1.
+  -- 1. 급여(salary)가 2000초과인 사원들의 부서 정보, 사원 정보를 출력
+  --      (dno, dname, eno, ename, salary)
+        select d.dno 부서번호, dname 부서이름, eno 사번, ename 사원이름, salary 연봉
+        from employee e, department d
+        where salary > 2000;
   
-  -- 2.
+  -- 2. 각 부서별 평균 급여, 최대 급여, 최소 급여, 사원수를 출력
+  --    (dno, dname, avg_salary, max_salary, min_salary, count)
+        select dno 부서번호, dname 부서이름, round(avg(salary),2) 평균급여, max(salary) "최대 급여", min(salary) "최소 급여", count(*) 사원수
+        from employee natural join department
+        group by dno,dname;
   
-  -- 3.
+  -- 3. 모든 부서 정보와 사원 정보를 부서 번호, 사원 이름순으로 정렬하여 출력
+        select * 
+        from employee natural join department
+        order by dno, ename;
   
-  -- 4.
+  -- 4. 모든 부서 정보, 사원 정보, 급여 등급 정보, 각 사원의 직속 상관의 정보를 부서 번호,
+  --    사원 번호 순서로 정렬하여 출력.
+        select distinct * 
+        from employee natural join department, salgrade
+        where salary between losal and hisal
+        order by dno, eno;
