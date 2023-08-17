@@ -195,16 +195,105 @@
         select job, trunc(avg(salary)) from employee group by job;
 
 -- < 서브쿼리 확인학습 Part.2 >
--- 1. 업부가 ANALST인 사원보다 연봉이 적으면서 업무가 ANALYST가 아닌 사원의 사번, 사원명, 업무, 연봉을 출력
-    
+-- # 다중행 서브쿼리
+-- 1. 업무가 ANALYST인 사원보다 연봉이 적으면서 업무가 ANALYST가 아닌 사원의 사번, 사원명, 업무, 연봉을 출력
+    select eno, ename, job, salary
+    from employee
+    where job <> 'ANALYST'
+    and salary <any (select salary from employee where job = 'ANALYST');
 
+-- # 단일행 서브쿼리
 -- 2. BLAKE와 동일한 부서에 속한 사원의 사원명, 입사일, 부서번호를 출력 BLAKE사원은 제외
+    select ename, hiredate, dno
+    from employee
+    where dno = (select dno from employee where ename = 'BLAKE')
+    and ename <> 'BLAKE';
 
+-- # 단일행 서브쿼리
 -- 3. 연봉이 평균연봉보다 많은 사원의 사번, 사원명, 연봉을 출력. 연봉에 대해 오름차순
+    select eno, ename, salary
+    from employee
+    where salary > (select avg(salary) from employee)
+    order by salary asc;
 
+-- # 다중행 서브쿼리
 -- 4. 이름에 K가 포함된 사원과 같은 부서에서 근무하는 사원의 사번, 사원명, 부서번호를 출력
+    select eno, ename, dno
+    from employee
+    where dno =any (select dno from employee where ename like '%K%');
 
+-- # 단일행 서브쿼리
 -- 5. 부서위치가 DALLAS인 사원의 사원명, 부서번호, 업무를 출력.
+    select ename, dno, job
+    from employee
+    where dno = (select dno from department where loc = 'DALLAS');
+    
+    -- 조인으로 해결
+    select ename, e.dno, job
+    from employee e, department d
+    where e.dno = d.dno
+    and loc = 'DALLAS';
+    
+-- < 서브쿼리 확인학습 Part.3 >
+
+-- # 단일행 서브쿼리
+-- 1. KING이 관리자가 되는 사원의 이름과 연봉을 출력
+    select ename, salary
+    from employee
+    where manager = (select eno from employee where ename = 'KING');
+    
+    -- 셀프 조인
+    select e.ename, e.salary
+    from employee e, employee k
+    where e.manager = k.eno
+    and k.ename = 'KING';
+    
+    select e.ename, e.salary
+    from employee e join employee k
+    on e.manager = k.eno
+    and k.ename = 'KING';
+    
+-- # 단일행 서브쿼리
+-- 2. RESEARCH 부서에서 근무하는 사원의 부서번호, 사원명, 업무를 출력
+    select dno, ename, job
+    from employee
+    where dno = (select dno from department where dname = 'RESEARCH');
+    
+    -- 이퀴조인
+    select e.dno, ename, job
+    from  employee e, department d
+    where e.dno = d.dno
+    and dname = 'RESEARCH';
+
+-- # 단일행 서브쿼리
+-- 3. 평균연봉보다 많은 연봉을 받고, 이름에 M이 포함된 사원과 같은 부서에서 근무하는 사원의 사번, 사원명, 연봉 출력
+    -- select avg(select) from employee; -->10, 20, 30
+    select eno, ename, salary
+    from employee
+    where salary >any (select avg(salary) from employee)
+    and dno =any (select dno from employee where ename like '%M%');
+
+-- # 단일행 서브쿼리
+-- 4. 평균연봉이 가장 적은 업무의 업무와 평균연봉을 출력
+    select job, trunc(avg(salary))
+    from employee
+    group by job
+    having avg(salary) in (select min(avg(salary)) from employee group by job);
+    
+    -- 강사님
+    select job, trunc(avg(salary)) from employee
+    group by job
+    having avg(salary) = (select min(avg(salary)) from employee group by job);
+    
+-- # 다중행 서브쿼리
+-- 5. 업무가 MANAGER인 사원이 속한 부서와 같은 부서에서 근무하는 사원의 사원명, 업무를 출력
+    select ename, job
+    from employee
+    where dno in (select dno from employee where job = 'MANAGER');
+
+-- < 서브쿼리 확인학습 Part.4 >
+-- 교재 262~267페이지의 4문제 해결
+
 
 
 
