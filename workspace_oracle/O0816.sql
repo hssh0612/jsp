@@ -401,8 +401,10 @@ order by e.eno;
  -- 9. 관리자보다 먼저 입사한 사원의 사원명, 입사일, 관리자이름, 관리자입사일을 출력
     -- * 강사님
     select e.ename 사원명, e.hiredate 사원입사일, m.ename 관리자명, m.hiredate 관리자입사일
-    from employee e, employee m
-    where e.manager = m.eno
+    from employee e join employee m
+    on e.manager = m.eno -- 조인 조건
+    and e.hiredate < m.hiredate
+    order by e.eno;
     
     
     -- 9-1.
@@ -428,23 +430,124 @@ order by e.eno;
  -- 교재 239 ~ 240 페이지의 4문제 해결
   -- 1. 급여(salary)가 2000초과인 사원들의 부서 정보, 사원 정보를 출력
   --      (dno, dname, eno, ename, salary)
+  
+        -- * 강사님1
+        select e.dno, dname, eno, ename, salary
+        from employee e, department d
+        where e.dno = d.dno
+        and salary > 2000
+        order by e.dno;
+        
+        -- * 강사님2
+        select dno, dname, eno, ename, salary
+        from employee natural join department 
+        where salary > 2000
+        order by dno;
+        
+        -- * 강사님3
+        select dno, dname, eno, ename, salary
+        from employee join department 
+        using(dno)
+        where salary > 2000
+        order by dno;
+        
+        -- * 강사님4
+        select e.dno, dname, eno, ename, salary
+        from employee e join department d
+        on e.dno = d.dno
+        and salary > 2000
+        order by e.dno;
+        
         select d.dno 부서번호, dname 부서이름, eno 사번, ename 사원이름, salary 연봉
         from employee e, department d
         where salary > 2000;
   
   -- 2. 각 부서별 평균 급여, 최대 급여, 최소 급여, 사원수를 출력
   --    (dno, dname, avg_salary, max_salary, min_salary, count)
+   -- -> 조인과 그룹핑을 함께 생각하는 문제
+        -- * 강사님1
+        select e.dno, dname, trunc(avg(salary)), max(salary), min(salary), count(*)
+        from employee e, department d
+        where e.dno = d.dno
+        group by e.dno, dname;
+        
+        -- * 강사님2
+        select dno, dname, trunc(avg(salary)), max(salary), min(salary), count(*)
+        from employee natural join department 
+        where e.dno = d.dno
+        group by e.dno, dname;
+        
+        -- * 강사님3
+        select dno, dname, trunc(avg(salary)), max(salary), min(salary), count(*)
+        from employee join department
+        using(dno)
+        group by dno, dname;
+        
+        -- * 강사님4
+        select e.dno, dname, trunc(avg(salary)), max(salary), min(salary), count(*)
+        from employee e join department d
+        on e.dno = d.dno
+        group by e.dno, dname;
+        
         select dno 부서번호, dname 부서이름, round(avg(salary),2) 평균급여, max(salary) "최대 급여", min(salary) "최소 급여", count(*) 사원수
         from employee natural join department
         group by dno,dname;
   
   -- 3. 모든 부서 정보와 사원 정보를 부서 번호, 사원 이름순으로 정렬하여 출력
+        -- * 강사님1 <left outer join >
+        select d.dno, dname, eno, ename, job, salary
+        from department d, employee e
+        where d.dno = e.dno(+)
+        order by e.dno, ename;
+        
+        -- * 강사님2 <left outer join >
+        select d.dno, dname, eno, ename, job, salary
+        from department d left outer join employee e
+        on d.dno = e.dno
+        order by e.dno, ename;
+        
+        -- * 강사님3 < right outer join >
+        select d.dno, dname, eno, ename, job, salary
+        from employee e, department d
+        where e.dno(+) = d.dno
+        order by e.dno, ename;
+        
+        -- * 강사님4 < right outer join >
+        select d.dno, dname, eno, ename, job, salary
+        from employee e right outer join department d
+        on e.dno(+) = d.dno
+        order by e.dno, ename;
+        
         select * 
         from employee natural join department
         order by dno, ename;
   
   -- 4. 모든 부서 정보, 사원 정보, 급여 등급 정보, 각 사원의 직속 상관의 정보를 부서 번호,
   --    사원 번호 순서로 정렬하여 출력.
+        -- * 강사님1 - 이전 방식
+        select d.dno, d.dname, e.eno, e.ename, e.manager, e.salary, e.dno, s.losal, s.hisal, s.grade, m.eno, m.ename
+        from department d, employee e, salgrade s, employee m
+        where d.dno = e.dno(+)
+        and e.salary between s.losal(+) and s.hisal(+)
+        and e.manager = m.eno(+)
+        order by d.dno, e.eno;
+        
+        -- * 강사님2 - 최근 방식(SQL-99 방식)
+        select d.dno, d.dname, e.eno, e.ename, e.manager, e.salary, e.dno, s.losal, s.hisal, s.grade, m.eno, m.ename
+        from department d
+        left outer join employee e on d.dno = e.dno
+        left outer join salgrade s on e.salary between s.losal and s.hisal
+        left outer join employee m on e.manager = m.eno
+        order by d.dno, e.eno;
+        
+        /*
+        department d, employee e, salgrade s, employee m
+        where d.dno = e.dno(+)
+        and e.salary between s.losal(+) and s.hisal(+)
+        and e.manager = m.eno(+)
+        order by d.dno, e.eno;
+        */
+        
         select distinct * 
         from employee natural join department, salgrade
         where salary between losal and hisal
