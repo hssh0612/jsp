@@ -99,6 +99,8 @@
 - any: 메인쿼리의 비교조건이 서브쿼리의 결과와 하나이상 일치할 때 사용
 - all: 메인쿼리의 비교조건이 서브쿼리의 결과와 모두 일치할 때 사용 
 
+- exists : 서브쿼리에 
+
 < 다중행 서브쿼리에서의 any와 all의 차이점 >
 1. any(some) : 서브쿼리의 여러 결과 중에서 한 가지만 만족해도 결과를 출력
  - <any : 서브쿼리의 결과 중에서 최대값보다 작은 값을 출력
@@ -333,6 +335,14 @@
     where salary  between losal and hisal
     and salary > (select max(salary) from employee where job = 'SALESMAN')
     order by eno;
+    
+    -- 굳이 다중행 서브쿼리 해결한다면.
+    select eno, ename, salary, grade
+    from employee e, salgrade s 
+    where salary  between losal and hisal
+    and salary >all (select salary from employee where job = 'SALESMAN')
+    order by eno;
+    
 
 
 
