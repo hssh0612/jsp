@@ -292,8 +292,47 @@
     where dno in (select dno from employee where job = 'MANAGER');
 
 -- < 서브쿼리 확인학습 Part.4 >
--- 교재 262~267페이지의 4문제 해결
+-- 교재 262~263페이지의 4문제 해결
 
+-- # 단일행 서브쿼리
+-- 1. 이퀴조인, 서브쿼리
+    select job, eno, ename, salary, e.dno, dname
+    from employee e, department d
+    where e.dno = d.dno
+    and job = (select job from employee where ename = 'ALLEN';
+    
+    -- 이퀴조인, 셀프조인
+    select o.job, o.ename, o.salary, o.dno, dname
+    from employee e, department d, employee o
+    where e.dno = d.dno -- 이퀴조인
+    and e.job = o.job -- 셀프조인
+    and e.ename = 'ALLEN'; 
+    
+-- # 단일형 서브쿼리
+-- 2. 이퀴조인, 넌이퀴조인, 서브쿼리
+    select eno, ename, dname, to_char(hiredate, 'yyyy-mm-dd') "HIREDATE", loc, salary, grade
+    from employee e, department d, salgrade s
+    where e.dno = d.dno
+    and salary between losal and hisal
+    and salary > (select avg(salary) from employee)
+    order by salary desc, ename;
+
+-- # 다중형 서브쿼리
+-- 3. 이퀴조인, 서브쿼리
+    select eno, ename, job, e.dno, dname, loc
+    from employee e, department d
+    where e.dno = d.dno -- 조인 조건
+    and e.dno = 10
+    and job not in (select job from employee where dno = 30);
+    
+
+-- # 단일형 서브쿼리
+-- 4. 넌이퀴조인, 서브쿼리
+    select eno, ename, salary, grade
+    from employee e, salgrade s 
+    where salary  between losal and hisal
+    and salary > (select max(salary) from employee where job = 'SALESMAN')
+    order by eno;
 
 
 
